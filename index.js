@@ -1,8 +1,8 @@
 /**
  *      Tic Tac Toe
+ *      unpolished version - byyten July 2023 
+ * 
 */
-
-
 
 const _board = (() => {
     let _board = [[-9,-9,-9],[-9,-9,-9],[-9,-9,-9]]
@@ -111,6 +111,7 @@ const _game = (() => {
     let players = []
     let board = _board;
     let game_over = false;
+    let winner = {}
     
     set_game_over = (state) => {
         game_over = state
@@ -118,6 +119,13 @@ const _game = (() => {
     get_game_state = () => {
         return game_over
     }
+    set_winner = (win) => {
+        winner = win
+    }
+    get_winner = () => {
+        return winner
+    }
+
     let _count = (() => {
         // _count = turn_counter(); _count.is(); _count.add()
         let __count = 1;
@@ -195,20 +203,38 @@ const _game = (() => {
             }
         }
     }
+    click_random_move = (player) => {
+        let free = false
+        let r, c;
+        while (!free && _count.is() <= 10 && !get_game_state()) {
+            [r, c] = player.random_choice() // moved to player
+            free = board.grid_free(r, c)
+            if (free) {
+                break;
+            }
+        }
+        return [r, c]
+    }
     has_winner = () => {
         let score = board.score();
-        let winner, game_result;
+        let win, game_result;
         if (score === 0 || score === 3) { // game has a winner - end of game 
             set_game_over(true)
             console.log('game over: ' + get_game_state())
             if (score === 0) {
-                winner = players[0].name 
+                win = players[0].name 
+                win = { idx: 0, name: players[0].name, moves: _count.is() - 1, game: 'won' } 
+                set_winner(win)
                 game_result = ` Winner is ${players[0].name} in ${_count.is() - 1} moves `
             } else if (score === 3) {
-                winner = players[1].name
+                win = players[1].name
+                win = { idx: 1, name: players[1].name, moves: _count.is() - 1, game: 'won' } 
+                set_winner(win)
                 game_result = ` Winner is ${players[1].name} in ${_count.is() - 1} moves `
             } else {
-                winner = 'draw'
+                win = 'draw'
+                win = { idx: -1, name: 'no one', moves: _count.is() - 1, game: 'drawn' } 
+                set_winner(win)
                 game_result = ' Game is drawn, no winner'
             }
             console.log(game_result)
@@ -237,28 +263,28 @@ const _game = (() => {
         board.reset()
         board.print()
         set_game_over(false);
+        set_winner({})
         console.log('game reset: new game' + get_game_state())
 
     }
-    return {player_add, player_reset, player_alternate, random_move, has_winner, players, board, _count, reset, set_game_over, get_game_state }
+    return {player_add, player_reset, player_alternate, random_move, click_random_move, has_winner, players, board, _count, reset, set_game_over, get_game_state, get_winner, set_winner }
 })()
 
-/* game play 
+/*  test/check/debug game play 
     game.reset()
     game.player_add(0, 'ceegee')
     game.player_add(1, 'ceegeemee')
     game.players.length
 
-    game.player_reset()  // not working?**!!!!
+    game.player_reset()  
     game.players.length
 
-
+    // repeat each move is random choice 
         [idx, _plyr]= game.player_alternate()
         game.random_move(game.players[idx])
         game.has_winner()
 
     game.reset()
-
 
     */
 
@@ -266,6 +292,8 @@ const _game = (() => {
     display = (() => {
         let ttt
         let grids
+        let awards
+        let wins
         let game = _game
         // let players
         let btn_player_add 
@@ -292,9 +320,9 @@ const _game = (() => {
             inp_player_names = document.querySelectorAll('input.player')
             btn_player_add = document.querySelectorAll('button.addplayer')
             btn_player_add.forEach(btn => btn.addEventListener('click', (evt) => {
-                let idx = Number(evt.target.classList[1].split('_')[1])
+                console.log(evt.target.parentNode.classList)
+                let idx = Number(evt.target.parentNode.classList[1].split('_')[1])
                 player_add(idx)
-                // evt.target.querySelector('span').textContent = '&check;'
             }))
 
 
@@ -311,13 +339,33 @@ const _game = (() => {
             })
             
             game.set_game_over(false);
+            game.set_winner({})
+
+            awards = document.querySelectorAll('.award')
+            wins = document.querySelectorAll('div.win')            
+            
+//             [1].style.visibility='visible'
+// [1].textContent = 'won in 5 moves' 
 
         }
+        set_award = () => {
+            let winner = game.get_winner()
+            awards[winner.idx].classList.replace('none','won')
+            wins[winner.idx].textContent = `Congrats to ${winner.name}, game won in ${winner.moves} moves `
+            if (winner.idx === -1) {
 
+            }
+        }
+
+        set_win = (idx, msg) => {
+            wins[idx].textContent = msg // `Won in ${_game._count.is() - 1} moves`
+        }
         grid_click = (_grid) => {
             console.log('game over: ' + _game.get_game_state())
-            if (!_game.get_game_state()) {
-                let r, c, _idx, _player, tf
+            let r, c, _idx, _player, tf
+            let  _r, _c, __idx, __plyr; // computer player 
+            if (!_game.get_game_state()) { // still in play
+                // let r, c, _idx, _player, tf
                 [r, c] = _grid.split('_').slice(1).map(n => Number(n))
                 console.log([r, c])
                 console.log([_idx, _player] = _game.player_alternate())
@@ -325,10 +373,26 @@ const _game = (() => {
                 console.log(_idx + ' ' + tf)
                 console.log( JSON.stringify(_player))
                 grids[display.rc_idx(r, c)].textContent = _player.token
+
             }
 
+            // determine if a winner has emerged (or a draw)
             _game.has_winner()
+
+            if (_game.get_game_state()) { // if a winner
+                set_award()
+            }
+            if (game.players[1].name.toLowerCase() === 'computer' && !_game.get_game_state() && _idx == 0) {
+                [_r, _c] = game.click_random_move(_game.players[1])
+                let grid_sq = ttt.querySelector('.grid_' + _r + '_' + _c)
+                grid_sq.click()
+                game.has_winner()
+                if (_game.get_game_state()) { // if a winner
+                    set_award()
+                }
+            }
         }
+        // derives flat array index from row col coordinates
         rc_idx = (r, c) => r * 3 + c;
         //  grids[rc_idx(2,1)]
         
@@ -336,6 +400,9 @@ const _game = (() => {
             grids.forEach(elem => {
                 elem.textContent = ''
             });
+            awards.forEach(aw => {
+                aw.classList.replace('won','none')
+            })
         }
 
         player_add = (idx) => {
@@ -353,12 +420,11 @@ const _game = (() => {
             inp_player_names.forEach(plyr => plyr.value = '')
             // display.
             game.player_reset()
+            reset_board()
         }
-
-        return {config, reset_board, grid_click, game, rc_idx, player_add, players_reset, _player_get, _player_set}        
+        config()
+        return {config, reset_board, grid_click, game, rc_idx, player_add, players_reset, _player_get, _player_set, awards, wins, set_award}        
     })()
-
-    display.config()
 
 
 

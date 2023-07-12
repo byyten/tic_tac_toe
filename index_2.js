@@ -213,6 +213,7 @@ game = (() => {
         }
         console.log(game_result)
         board.print()
+        console.log('has_winner: end ' + game_over)
 
         // return { board: score, winner: winner, moves: _count.is() } 
     }

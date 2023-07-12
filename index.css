@@ -1,0 +1,90 @@
+
+@font-face {
+   font-family: open-sans;
+   src: url(OpenSans-VariableFont_wdth,wght.ttf);
+}
+
+.material-symbols-outlined {
+   font-variation-settings:
+   'FILL' 0,
+   'wght' 400,
+   'GRAD' 0,
+   'opsz' 1rem;
+   /* margin-right: 1rem; */
+ }
+
+body {
+    font-family: OpenSans, Verdana, Geneva, Tahoma, sans-serif;
+    font-weight: 400;
+    /* font-size: 2rem; */
+ }
+
+ .container {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto;
+    justify-items: center;
+    align-items: center;
+    width: 800px;
+  }
+ div.player {
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    justify-content: center;
+ }
+
+ div.grid { 
+    width: 3rem;
+    height: 3rem;
+    text-align: center;
+    vertical-align: middle;
+    font-weight: 600;
+    font-size: 1.6rem;
+}
+td {
+    border: 1px solid grey;
+}
+
+button.addplayer {
+   border: none;
+   border-radius: 1rem;
+   height: 2rem;
+   width: 2rem;
+   background-color: cornflowerblue;
+   color: aliceblue;
+   font-size: 1rem;
+}
+input.player {
+   height: 1.6rem;
+   
+}
+
+div.award {
+   display: flex;
+   flex-direction: column;
+   justify-content: center;
+   align-content: center;
+   height: 5rem;
+   width: 5rem;
+   visibility: hidden;
+}
+div.win {
+   font-size: 0.6rem;
+}
+div.game_controls {
+   height: 5rem;
+   display: flex;
+   justify-content: center;
+   align-content: center;
+}
+button.reset {
+   border: none;
+   border-radius: 1rem;
+   height: 2rem;
+   width: 2rem;
+   margin: 1rem;
+   background-color: cornflowerblue;
+   color: aliceblue;
+   font-size: 1rem;
+}

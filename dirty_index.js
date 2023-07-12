@@ -112,12 +112,6 @@ const _game = (() => {
     let board = _board;
     let game_over = false;
     
-    set_game_over = (state) => {
-        game_over = state
-    }
-    get_game_state = () => {
-        return game_over
-    }
     let _count = (() => {
         // _count = turn_counter(); _count.is(); _count.add()
         let __count = 1;
@@ -175,21 +169,21 @@ const _game = (() => {
         }
         _turn = _count.is() % 2 == 0 ? 1 : 0; //       players_turn(_count.is()); // determines whose turn it is // returns 0 | 1 which implies/indexes the player array 
         _plyr = players[_turn]; //alternates between players  
-        if (!get_game_state()) { _count.add(); } // increments after move
+        if (!game_over) { _count.add(); } // increments after move
         console.log(['?', _turn, _plyr])
         return [_turn, _plyr]
     }
     random_move = (player) => {
         let free = false
         let r, c;
-        while (!free && _count.is() <= 10 && !get_game_state()) {
+        while (!free && _count.is() <= 10 && !game_over) {
             [r, c] = player.random_choice() // moved to player
             free = board.grid_free(r, c)
             if (free) {
                 board.set_move(r, c, player.value); 
             }
             if (_count.is() >= 11 ) {
-                set_game_over(true)
+                game_over = true
                 has_winner()
                 break;
             }
@@ -199,8 +193,8 @@ const _game = (() => {
         let score = board.score();
         let winner, game_result;
         if (score === 0 || score === 3) { // game has a winner - end of game 
-            set_game_over(true)
-            console.log('game over: ' + get_game_state())
+            game_over = true
+            console.log('game over: ' + game_over)
             if (score === 0) {
                 winner = players[0].name 
                 game_result = ` Winner is ${players[0].name} in ${_count.is() - 1} moves `
@@ -213,22 +207,22 @@ const _game = (() => {
             }
             console.log(game_result)
             board.print()
-            console.log('has_winner: end ' + get_game_state())
+            console.log('has_winner: end ' + game_over)
             return
         } else if (score === -1  && _count.is() >= 10) {
-            set_game_over(true)
-            console.log('game over: ' + get_game_state())
+            game_over = true
+            console.log('game over: ' + game_over)
             game_result = ' Game is drawn, no winner'
             console.log(game_result)
             board.print()
-            console.log('has_winner: end ' + get_game_state())
+            console.log('has_winner: end ' + game_over)
             return
         } else {
             console.log( 'no winner yet after ' + (_count.is() - 1) + ' moves')
         }
         console.log(game_result)
         board.print()
-        console.log('has_winner: end ' + get_game_state())
+        console.log('has_winner: end ' + game_over)
 
         // return { board: score, winner: winner, moves: _count.is() } 
     }
@@ -236,14 +230,14 @@ const _game = (() => {
         _count.reset()
         board.reset()
         board.print()
-        set_game_over(false);
-        console.log('game reset: new game' + get_game_state())
+        game_over = false;
+        console.log('game reset: new game' + game_over)
 
     }
-    return {player_add, player_reset, player_alternate, random_move, has_winner, players, board, _count, reset, set_game_over, get_game_state }
+    return {player_add, player_reset, player_alternate, random_move, has_winner, players, board, _count, reset, game_over }
 })()
 
-/* game play 
+/*
     game.reset()
     game.player_add(0, 'ceegee')
     game.player_add(1, 'ceegeemee')
@@ -283,7 +277,7 @@ const _game = (() => {
             grids.forEach(gr => {
                 gr.addEventListener('click', (evt) => {
                     //console.log(evt.target)
-                    if (!game.get_game_state()) {
+                    if (!game.game_over) {
                         grid_click(evt.target.classList[1])
                     }
                 })
@@ -294,14 +288,13 @@ const _game = (() => {
             btn_player_add.forEach(btn => btn.addEventListener('click', (evt) => {
                 let idx = Number(evt.target.classList[1].split('_')[1])
                 player_add(idx)
-                // evt.target.querySelector('span').textContent = '&check;'
+                evt.target.textContent = 'Change player'
             }))
 
 
             btn_players_reset = document.querySelector('button.reset_players')
             btn_players_reset.addEventListener('click', (evt) => {
                 players_reset()
-                // btn_player_add.forEach(btn => btn.querySelector('span').textContent = '&plus;')
             })
             
             btn_reset_board = document.querySelector('button.reset_board')
@@ -310,13 +303,13 @@ const _game = (() => {
                 display.reset_board()
             })
             
-            game.set_game_over(false);
+            game.game_over = false;
 
         }
 
         grid_click = (_grid) => {
-            console.log('game over: ' + _game.get_game_state())
-            if (!_game.get_game_state()) {
+            console.log('game over: ' + _game.game_over)
+            if (!_game.game_over) {
                 let r, c, _idx, _player, tf
                 [r, c] = _grid.split('_').slice(1).map(n => Number(n))
                 console.log([r, c])
@@ -358,6 +351,9 @@ const _game = (() => {
         return {config, reset_board, grid_click, game, rc_idx, player_add, players_reset, _player_get, _player_set}        
     })()
 
+
+
+
     display.config()
 
 
@@ -375,3 +371,48 @@ const _game = (() => {
 
 
 
+
+
+
+
+    // grid_click = (_grid) => {
+    //     console.log(display.game)
+        
+    //     let r, c, _turn, _plyr
+    //     [r, c] = _grid.split('_').slice(1).map(n => Number(n))
+    //     console.log([r, c])
+
+    //     [_turn , _plyr] = _game.player_alternate()
+    //     display.game.set_move(r, c, _plyr.value)
+
+    //     console.log(_turn)
+    //     console.log( JSON.stringify(_plyr))
+    //     display.grids[display.rc_idx(r, c)].textContent = _plyr.token
+    //     _game.has_winner()
+    // }
+
+
+    // display = disp()
+
+  
+
+            // try {
+            //     [_turn , _plyr] = _game.player_alternate()
+            //     _game.set_move(r, c, _plyr.value)
+            // } catch (err) {
+            //     if (_game.players.length !== 2) {
+            //         console.log("Can't play, need two players, set up 2 players and reset board for new game")
+            //         return [undefined, undefined]
+            //     }
+            //     if (_game._count.is() > 10) {
+            //         console.log(' Game has no more moves, reset game and play again')
+            //         _game.has_winner()
+            //         return [undefined, undefined]
+            //     }
+            //     let _turn = _game._count.is() % 2 == 0 ? 1 : 0; //       players_turn(_count.is()); // determines whose turn it is // returns 0 | 1 which implies/indexes the player array 
+            //     let _plyr = _game.players[_turn]; //alternates between players  
+            //     console.log( _turn, _plyr)
+            //     _game.board.set_move(r, c, _plyr.value)
+        
+            //     if (!_game.game_over) _game._count.add(); // increments after move
+            // }
